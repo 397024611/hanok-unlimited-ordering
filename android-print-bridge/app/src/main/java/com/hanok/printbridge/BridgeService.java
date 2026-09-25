@@ -194,7 +194,8 @@ public class BridgeService extends Service {
                 String table=group.get(0).optString("table_name","TABLE");
                 setStatus("Printing "+table+"...");
                 try{
-                    if(!wasDelivered("total",key)){
+                    boolean totalEnabled=prefs.getBoolean("total_printer_enabled",true);
+                    if(totalEnabled&&!wasDelivered("total",key)){
                         printTotal(group);
                         rememberDelivered("total",key);
                     }
@@ -211,7 +212,7 @@ public class BridgeService extends Service {
                     firstSeen.remove(key);
                     printedAnything=true;
                     prefs.edit().putLong("last_print_at",System.currentTimeMillis()).apply();
-                    setStatus("Printed "+table+" · total + split");
+                    setStatus(totalEnabled?"Printed "+table+" · total + split":"Printed "+table+" · split only (P1 disabled)");
                 }catch(Throwable e){
                     setStatus("Print error · "+shortMsg(e));
                     return 3000L;

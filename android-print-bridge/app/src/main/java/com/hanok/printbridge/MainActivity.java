@@ -17,6 +17,7 @@ import android.widget.*;
 
 public class MainActivity extends Activity {
     private EditText totalHost, splitHost, barHost, port;
+    private Switch totalPrinterEnabled;
     private TextView statusText, statusPill, backgroundState, serviceHealth;
     private Button start, stop;
     private final Handler h = new Handler(Looper.getMainLooper());
@@ -68,13 +69,21 @@ public class MainActivity extends Activity {
         statusPill=text("● STOPPED",13,true,Color.rgb(130,130,130)); statusCard.addView(statusPill);
         statusText=text(p.getString("status","Stopped"),17,true,ink); statusText.setPadding(0,dp(6),0,0); statusCard.addView(statusText);
         serviceHealth=text("Waiting for health status…",12,false,Color.DKGRAY); serviceHealth.setPadding(0,dp(5),0,0); statusCard.addView(serviceHealth);
-        TextView hint=text("Keep this phone on store Wi-Fi and connected to power. v1.9 keeps this screen awake automatically while the app is open.",12,false,Color.DKGRAY); hint.setPadding(0,dp(5),0,0); statusCard.addView(hint); root.addView(statusCard);
+        TextView hint=text("Keep this phone on store Wi-Fi and connected to power. v1.11 keeps this screen awake automatically while the app is open.",12,false,Color.DKGRAY); hint.setPadding(0,dp(5),0,0); statusCard.addView(hint); root.addView(statusCard);
 
         section(root,"PRINTERS");
         LinearLayout pcard=card(); pcard.setPadding(dp(16),dp(12),dp(16),dp(14));
         pcard.addView(label("Printer 1 · TOTAL ORDER"));
-        totalHost=field(BridgeConfig.DEFAULT_TOTAL_IP,p.getString("total_host",BridgeConfig.DEFAULT_TOTAL_IP)); pcard.addView(totalHost);
-        TextView p1help=text("Combined Meat + Hot Dish ticket.",11,false,Color.GRAY); p1help.setPadding(0,dp(2),0,dp(8)); pcard.addView(p1help);
+        totalPrinterEnabled=new Switch(this);
+        totalPrinterEnabled.setText("Enable Printer 1 (TOTAL ORDER)");
+        totalPrinterEnabled.setTextSize(13);
+        totalPrinterEnabled.setChecked(p.getBoolean("total_printer_enabled",true));
+        totalPrinterEnabled.setPadding(0,0,0,dp(4));
+        pcard.addView(totalPrinterEnabled);
+        totalHost=field(BridgeConfig.DEFAULT_TOTAL_IP,p.getString("total_host",BridgeConfig.DEFAULT_TOTAL_IP));
+        totalHost.setEnabled(totalPrinterEnabled.isChecked());
+        pcard.addView(totalHost);
+        TextView p1help=text("OFF = P1 is fully skipped: no order printing, no retry and no health-check connection.",11,false,Color.GRAY); p1help.setPadding(0,dp(2),0,dp(8)); pcard.addView(p1help);
         pcard.addView(label("Printer 2 · SPLIT ORDER"));
         splitHost=field(BridgeConfig.DEFAULT_SPLIT_IP,p.getString("split_host",BridgeConfig.DEFAULT_SPLIT_IP)); pcard.addView(splitHost);
         TextView p2help=text("Separate BBQ MEAT and HOT KITCHEN tickets.",11,false,Color.GRAY); p2help.setPadding(0,dp(2),0,dp(8)); pcard.addView(p2help);
@@ -87,20 +96,27 @@ public class MainActivity extends Activity {
 
         LinearLayout tests=new LinearLayout(this); tests.setOrientation(LinearLayout.HORIZONTAL); tests.setPadding(0,dp(10),0,0);
         Button t1=smallButton("TEST TOTAL"), t2=smallButton("TEST SPLIT"), t3=smallButton("TEST BAR"); tests.addView(t1); tests.addView(t2); tests.addView(t3); root.addView(tests);
+        t1.setEnabled(totalPrinterEnabled.isChecked());
 
         section(root,"ALWAYS-ON PROTECTION");
         LinearLayout bg=card(); bg.setPadding(dp(16),dp(14),dp(16),dp(14));
         backgroundState=text("Checking always-on protection…",14,true,ink); bg.addView(backgroundState);
-        TextView bgHelp=text("v1.9 uses foreground service, CPU/Wi-Fi locks, watchdog recovery and keep-screen-on protection. Keep the phone plugged in and leave this app in the foreground for the most reliable OPPO operation.",12,false,Color.DKGRAY); bgHelp.setPadding(0,dp(4),0,dp(8)); bg.addView(bgHelp);
+        TextView bgHelp=text("v1.11 uses foreground service, CPU/Wi-Fi locks, watchdog recovery and keep-screen-on protection. Keep the phone plugged in and leave this app in the foreground for the most reliable OPPO operation.",12,false,Color.DKGRAY); bgHelp.setPadding(0,dp(4),0,dp(8)); bg.addView(bgHelp);
         Button allow=secondaryButton("ENABLE ALWAYS-ON PROTECTION"); bg.addView(allow); root.addView(bg);
 
         start=primaryButton("START BRIDGE"); root.addView(start);
         stop=secondaryButton("STOP BRIDGE"); LinearLayout.LayoutParams slp=(LinearLayout.LayoutParams)stop.getLayoutParams(); slp.setMargins(0,dp(10),0,0); stop.setLayoutParams(slp); root.addView(stop);
 
-        TextView footer=text("v1.9 · orderhanokbbqwagga.com · ESC/POS · TCP 9100",11,false,Color.GRAY); footer.setGravity(Gravity.CENTER); footer.setPadding(0,dp(18),0,0); root.addView(footer);
+        TextView footer=text("v1.11 · orderhanokbbqwagga.com · ESC/POS · TCP 9100",11,false,Color.GRAY); footer.setGravity(Gravity.CENTER); footer.setPadding(0,dp(18),0,0); root.addView(footer);
         setContentView(sv);
 
         t1.setOnClickListener(v->test(1)); t2.setOnClickListener(v->test(2)); t3.setOnClickListener(v->test(3));
+        totalPrinterEnabled.setOnCheckedChangeListener((button,isChecked)->{
+            getSharedPreferences(BridgeConfig.PREFS,MODE_PRIVATE).edit().putBoolean("total_printer_enabled",isChecked).apply();
+            totalHost.setEnabled(isChecked);
+            t1.setEnabled(isChecked);
+            toast(isChecked?"Printer 1 enabled":"Printer 1 disabled · P2/P3 stay active");
+        });
         start.setOnClickListener(v->startBridge()); stop.setOnClickListener(v->stopBridge()); allow.setOnClickListener(v->requestBackgroundAccess());
         updateBackgroundState();
     }
@@ -174,6 +190,7 @@ public class MainActivity extends Activity {
     private void save(){
         int prt=9100; try{prt=Integer.parseInt(port.getText().toString().trim());}catch(Exception ignored){}
         getSharedPreferences(BridgeConfig.PREFS,MODE_PRIVATE).edit()
+          .putBoolean("total_printer_enabled",totalPrinterEnabled==null||totalPrinterEnabled.isChecked())
           .putString("total_host",totalHost.getText().toString().trim())
           .putString("split_host",splitHost.getText().toString().trim())
           .putString("bar_host",barHost.getText().toString().trim())
@@ -182,6 +199,7 @@ public class MainActivity extends Activity {
 
     private void test(int which){
         save();
+        if(which==1&&!getSharedPreferences(BridgeConfig.PREFS,MODE_PRIVATE).getBoolean("total_printer_enabled",true)){toast("Printer 1 is disabled");return;}
         String host=which==1?totalHost.getText().toString().trim():which==2?splitHost.getText().toString().trim():barHost.getText().toString().trim();
         String label=which==1?"TOTAL ORDER PRINTER":which==2?"SPLIT ORDER PRINTER":"BAR RICE PRINTER";
         int prt=9100; try{prt=Integer.parseInt(port.getText().toString().trim());}catch(Exception ignored){} final int fp=prt;

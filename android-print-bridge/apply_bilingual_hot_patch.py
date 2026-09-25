@@ -20,6 +20,6 @@ text = text.replace(footer_anchor, footer_insert, 1)
 bridge.write_text(text, encoding='utf-8')
 
 main = Path('app/src/main/java/com/hanok/printbridge/MainActivity.java')
-m = main.read_text(encoding='utf-8').replace('v1.9','v1.10')
+m = main.read_text(encoding='utf-8').replace('v1.9','v1.11').replace('v1.10','v1.11')
 main.write_text(m, encoding='utf-8')
 print('Applied bilingual HOT KITCHEN print patch')

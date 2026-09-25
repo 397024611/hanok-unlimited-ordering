@@ -42,7 +42,8 @@ public final class PrinterHealthMonitor {
         String barHost=prefs.getString("bar_host",BridgeConfig.DEFAULT_BAR_IP);
         int port=prefs.getInt("port",BridgeConfig.DEFAULT_PORT);
 
-        Probe total=probe(totalHost,port);
+        boolean totalEnabled=prefs.getBoolean("total_printer_enabled",true);
+        Probe total=totalEnabled?probe(totalHost,port):new Probe(false,0);
         Probe split=probe(splitHost,port);
         Probe bar=probe(barHost,port);
         long now=System.currentTimeMillis();
