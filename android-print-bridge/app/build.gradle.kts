@@ -15,3 +15,4 @@ android {
 
 // v1.12 workflow trigger via PR
 // trigger actions after permissions restored
+// v1.12 release build via PR
