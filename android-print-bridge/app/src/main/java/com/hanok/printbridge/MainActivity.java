@@ -32,12 +32,14 @@ public class MainActivity extends Activity {
             requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},5);
         buildUi();
         h.post(refresh);
+        h.postDelayed(()->UpdateManager.autoCheck(this),2500L);
     }
 
     @Override protected void onResume(){
         super.onResume();
         updateBackgroundState();
         maybeRecoverService(true);
+        UpdateManager.resumePendingInstall(this);
     }
 
     private void migratePrinterRoles(){
@@ -69,7 +71,7 @@ public class MainActivity extends Activity {
         statusPill=text("● STOPPED",13,true,Color.rgb(130,130,130)); statusCard.addView(statusPill);
         statusText=text(p.getString("status","Stopped"),17,true,ink); statusText.setPadding(0,dp(6),0,0); statusCard.addView(statusText);
         serviceHealth=text("Waiting for health status…",12,false,Color.DKGRAY); serviceHealth.setPadding(0,dp(5),0,0); statusCard.addView(serviceHealth);
-        TextView hint=text("Keep this phone on store Wi-Fi and connected to power. v1.11 keeps this screen awake automatically while the app is open.",12,false,Color.DKGRAY); hint.setPadding(0,dp(5),0,0); statusCard.addView(hint); root.addView(statusCard);
+        TextView hint=text("Keep this phone on store Wi-Fi and connected to power. v1.12 keeps this screen awake automatically while the app is open.",12,false,Color.DKGRAY); hint.setPadding(0,dp(5),0,0); statusCard.addView(hint); root.addView(statusCard);
 
         section(root,"PRINTERS");
         LinearLayout pcard=card(); pcard.setPadding(dp(16),dp(12),dp(16),dp(14));
@@ -101,13 +103,18 @@ public class MainActivity extends Activity {
         section(root,"ALWAYS-ON PROTECTION");
         LinearLayout bg=card(); bg.setPadding(dp(16),dp(14),dp(16),dp(14));
         backgroundState=text("Checking always-on protection…",14,true,ink); bg.addView(backgroundState);
-        TextView bgHelp=text("v1.11 uses foreground service, CPU/Wi-Fi locks, watchdog recovery and keep-screen-on protection. Keep the phone plugged in and leave this app in the foreground for the most reliable OPPO operation.",12,false,Color.DKGRAY); bgHelp.setPadding(0,dp(4),0,dp(8)); bg.addView(bgHelp);
+        TextView bgHelp=text("v1.12 uses foreground service, CPU/Wi-Fi locks, watchdog recovery and keep-screen-on protection. Keep the phone plugged in and leave this app in the foreground for the most reliable OPPO operation.",12,false,Color.DKGRAY); bgHelp.setPadding(0,dp(4),0,dp(8)); bg.addView(bgHelp);
         Button allow=secondaryButton("ENABLE ALWAYS-ON PROTECTION"); bg.addView(allow); root.addView(bg);
+
+        section(root,"APP UPDATE");
+        LinearLayout updateCard=card(); updateCard.setPadding(dp(16),dp(14),dp(16),dp(14));
+        TextView updateHelp=text("Checks the Hanok update server, downloads a newer signed APK automatically, then opens the Android installer.",12,false,Color.DKGRAY); updateHelp.setPadding(0,0,0,dp(8)); updateCard.addView(updateHelp);
+        Button checkUpdate=secondaryButton("CHECK FOR APP UPDATE"); updateCard.addView(checkUpdate); root.addView(updateCard);
 
         start=primaryButton("START BRIDGE"); root.addView(start);
         stop=secondaryButton("STOP BRIDGE"); LinearLayout.LayoutParams slp=(LinearLayout.LayoutParams)stop.getLayoutParams(); slp.setMargins(0,dp(10),0,0); stop.setLayoutParams(slp); root.addView(stop);
 
-        TextView footer=text("v1.11 · orderhanokbbqwagga.com · ESC/POS · TCP 9100",11,false,Color.GRAY); footer.setGravity(Gravity.CENTER); footer.setPadding(0,dp(18),0,0); root.addView(footer);
+        TextView footer=text("v1.12 · orderhanokbbqwagga.com · ESC/POS · TCP 9100",11,false,Color.GRAY); footer.setGravity(Gravity.CENTER); footer.setPadding(0,dp(18),0,0); root.addView(footer);
         setContentView(sv);
 
         t1.setOnClickListener(v->test(1)); t2.setOnClickListener(v->test(2)); t3.setOnClickListener(v->test(3));
@@ -118,6 +125,7 @@ public class MainActivity extends Activity {
             toast(isChecked?"Printer 1 enabled":"Printer 1 disabled · P2/P3 stay active");
         });
         start.setOnClickListener(v->startBridge()); stop.setOnClickListener(v->stopBridge()); allow.setOnClickListener(v->requestBackgroundAccess());
+        checkUpdate.setOnClickListener(v->UpdateManager.check(this,false));
         updateBackgroundState();
     }
 
