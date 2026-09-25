@@ -1,6 +1,8 @@
 name: Build Android Print Bridge APK
 
 on:
+  pull_request:
+    types: [opened, synchronize]
   issue_comment:
     types: [created]
   push:
