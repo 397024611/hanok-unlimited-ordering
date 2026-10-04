@@ -70,7 +70,7 @@
 - Production domain：`orderhanokbbqwagga.com`
 - Vercel fallback domain：`hanok-unlimited-ordering-za6y.vercel.app`
 
-### 最新生产部署
+### 链路验证基准部署（SSOT 创建前）
 - Deployment ID：`dpl_8Mw2SyYEHm75MTzzJPYXdGyhtj4J`
 - State：`READY`
 - Target：`production`
@@ -393,7 +393,7 @@ Artifact name：
 | GitHub | `397024611/hanok-unlimited-ordering` | ✅ Connected |
 | Branch | `main` | ✅ Active |
 | Vercel | `hanok-unlimited-ordering-za6y` | ✅ Connected |
-| Production deploy | `dpl_8Mw2SyYEHm75MTzzJPYXdGyhtj4J` | ✅ READY |
+| Verified chain deploy | `dpl_8Mw2SyYEHm75MTzzJPYXdGyhtj4J` | ✅ READY |
 | Node | `22.x` | ✅ Aligned |
 | Domain | `orderhanokbbqwagga.com` | ✅ Verified |
 | Supabase | `hanokwagga buffet` | ✅ ACTIVE_HEALTHY |
@@ -531,7 +531,7 @@ Artifact name：
 - Node → `22.x`
 - GitHub → Vercel 自动部署测试成功
 - 测试文件已清理
-- 最新 production deployment READY
+- 链路验证 production deployment READY
 - 明确废弃旧 GreatDaniel93 canonical identity
 - 明确禁止把 Meat House / `meathouse-skewer-ordering` / `meathouseskewer.com.au` 混入 Wagga
 - 保存 Wagga ordering、voucher、print bridge、v1.11 signing/P1-OFF 以及 crash 风险的历史基线
